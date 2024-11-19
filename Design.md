@@ -1,0 +1,1 @@
+We are going to use UDP sockets the SOCK_DGRAM constant from the socket library. We are going to implement Go-back-N as our reliable transfer with congestion control.
