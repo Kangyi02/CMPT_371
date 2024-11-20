@@ -3,7 +3,7 @@ from packet import *
 
 # create a udp socket connection
 serverName = gethostname()
-serverPort = 12011
+serverPort = 12012
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
 # global variable to see if hand shake successful

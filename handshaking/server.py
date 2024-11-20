@@ -3,7 +3,7 @@ from socket import *
 from packet import * 
 
 # create a udp socket connection
-serverPort = 12011
+serverPort = 12012
 serverSocket = socket(AF_INET, SOCK_DGRAM)
 serverSocket.bind(('', serverPort))
 
