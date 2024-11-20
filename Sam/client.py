@@ -1,5 +1,5 @@
 from socket import *
-from wrapper import wrapper
+from packet import Packet
 
 hostname = gethostname()
 IPAddr = gethostbyname(hostname)
@@ -11,14 +11,18 @@ clientSocket = socket(AF_INET, SOCK_DGRAM)
 f  = open('test.txt')
 
 
-# wrapper gets set up by handshake, for now hard coded
+# Packet gets set up by handshake, for now hard coded
 
-header = wrapper()
 
-data = f.read(500)
+
+data = f.read(50)
 while data != '':
-    length = clientSocket.sendto(data.encode(),(serverName, serverPort))
+    packet = Packet(0, 1, 1, data)
+    length = clientSocket.sendto(packet.change_to_bytes(),(serverName, serverPort))
     print('length of message sent:', length, 'len of message:', len(data))
     modifiedMessage, serverAddress = clientSocket.recvfrom(2048)
-    print(modifiedMessage.decode())
-    data = f.read(500)
+    print(Packet.from_bytes_to(modifiedMessage))
+    data = f.read(50)
+
+
+    # send
