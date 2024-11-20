@@ -8,13 +8,13 @@ class Packet:
         self.payload = payload
 
     def change_to_bytes(self):
-        header = struct.pack('III', self.sequence_num, self.syn, self.ack)
+        header = struct.pack('II?', self.sequence_num, self.ack, self.syn)
         payload_bytes = self.payload.encode()
         payload_length = len(payload_bytes)
         return header + struct.pack('I', payload_length) + payload_bytes
 
     def from_bytes_to(data):
-        sequence_num, syn, ack = struct.unpack('III', data[:12])
-        payload_length = struct.unpack('I', data[12:16])[0]
-        payload = data[16:16 + payload_length].decode()
+        sequence_num, ack, syn = struct.unpack('II?', data[:9])
+        payload_length = struct.unpack('I', data[9:13])[0]
+        payload = data[13:13 + payload_length].decode()
         return Packet(sequence_num, syn, ack, payload)
