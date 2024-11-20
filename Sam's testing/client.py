@@ -1,4 +1,5 @@
 from socket import *
+from wrapper import wrapper
 
 hostname = gethostname()
 IPAddr = gethostbyname(hostname)
@@ -8,6 +9,11 @@ serverPort = 1200
 
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 f  = open('test.txt')
+
+
+# wrapper gets set up by handshake, for now hard coded
+
+header = wrapper()
 
 data = f.read(500)
 while data != '':
