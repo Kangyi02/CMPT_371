@@ -1,5 +1,6 @@
 from socket import *
 from packet import Packet
+import time
 
 hostname = gethostname()
 IPAddr = gethostbyname(hostname)
@@ -11,6 +12,7 @@ clientSocket = socket(AF_INET, SOCK_DGRAM)
 f  = open('test.txt')
 
 ssthresh = float('INF')
+cwnd = 1
 dupAckCount = 0
 # Packet gets set up by handshake, for now hard coded
 
@@ -26,8 +28,26 @@ while data != '':
     data = f.read(50)
 
 
-    # send packet
-    # set timer for correct ack number
-    # if recieve other ack or time out start resending from that point. and set 
-    # when you recieve send two more packets
+# send packet
+# set timer for correct ack number
+# if recieve other ack start resending from that point.
+# if recieve other ack 3 times in a row or time out reset cwnd to 1 
+# when you recieve send two more packets
+
+too_long = 10
+set_Timer = time.time()
+savedPackets = {}
+
+while data!='': # data from above
+    currentlyAccepting = 0 # set from handshake
+    
+    #wrap data
+    packet = Packet()
+    set_Timer = time.time()
+    
+    if set_Timer - time.time() < too_long or currentlyAccepting:
+        # time out stuff
+        ssthresh = cwnd / 2
+
+
  
