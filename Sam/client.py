@@ -14,19 +14,6 @@ f  = open('test.txt')
 ssthresh = float('INF')
 cwnd = 1
 dupAckCount = 0
-# Packet gets set up by handshake, for now hard coded
-
-
-
-data = f.read(50)
-while data != '':
-    packet = Packet(0, 1, True, data)
-    length = clientSocket.sendto(packet.change_to_bytes(),(serverName, serverPort))
-    print('length of message sent:', length, 'len of message:', len(data))
-    modifiedMessage, serverAddress = clientSocket.recvfrom(2048)
-    print(Packet.from_bytes_to(modifiedMessage))
-    data = f.read(50)
-
 
 # send packet
 # set timer for correct ack number
@@ -34,20 +21,33 @@ while data != '':
 # if recieve other ack 3 times in a row or time out reset cwnd to 1 
 # when you recieve send two more packets
 
-too_long = 10
+
+too_long = 2
 set_Timer = time.time()
 savedPackets = {}
+currentlyAccepting = 1 # set from handshake
+seq_num = 0
+clientSocket.settimeout(too_long)
 
+data = f.read(50)
 while data!='': # data from above
-    currentlyAccepting = 0 # set from handshake
-    
-    #wrap data
-    packet = Packet()
-    set_Timer = time.time()
-    
-    if set_Timer - time.time() < too_long or currentlyAccepting:
-        # time out stuff
-        ssthresh = cwnd / 2
-
-
- 
+    currentlyAccepting = seq_num + len(data)
+    # wrap data
+    packet = Packet(seq_num, False, True, currentlyAccepting, data)
+    seq_num += len(data)
+    flag = True
+    while flag:
+        clientSocket.sendto(packet.change_to_bytes(),(serverName, serverPort))
+        
+        try:
+            ack, serverAddress = clientSocket.recvfrom(2048)
+            response_packet = Packet.from_bytes_to(ack)
+            if (response_packet.ack_num == currentlyAccepting):
+                flag = not flag
+                print(response_packet.payload, response_packet.sequence_num)
+        except:
+            # timeout
+            print('timeout happened, resending the sequence number:', packet.sequence_num)
+            flag = False
+        
+    data = f.read(50)
