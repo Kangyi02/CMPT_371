@@ -19,3 +19,9 @@ class Packet:
         payload_length = struct.unpack('I', data[10:14])[0]
         payload = data[14:14 + payload_length].decode()
         return Packet(sequence_num, syn_flag, ack_flag, ack_num, payload)
+    
+    def __str__(self):
+        return str(self.sequence_num) + '\n' \
+            + str(self.ack_num) + '\n' \
+            + str(self.ack_flag) + str(self.syn_flag) +'\n' \
+            + self.payload
