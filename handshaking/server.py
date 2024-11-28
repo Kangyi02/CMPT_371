@@ -3,7 +3,7 @@ from socket import *
 from packet import * 
 
 # create a udp socket connection
-serverPort = 12012
+serverPort = 12014
 serverSocket = socket(AF_INET, SOCK_DGRAM)
 serverSocket.bind(('', serverPort))
 
@@ -18,9 +18,9 @@ def handshake_server_side():
     received_packet = Packet.from_bytes_to(message)
 
     # create a SYNACK, then sends back to the client
-    if received_packet.syn_flag:
+    if received_packet.flags == 0b100:
         ack_num = received_packet.sequence_num + 1
-        sender_ack_syn_packet = Packet(initial_seq_num, True, True, ack_num, '')
+        sender_ack_syn_packet = Packet(initial_seq_num, 0b110, ack_num, '')
 
         serverSocket.sendto(sender_ack_syn_packet.change_to_bytes(), clientAddress)
 
@@ -29,7 +29,7 @@ def handshake_server_side():
         # print(received_packet.ack_num)
 
         # then the server receives the ACK from the client, done
-        if received_packet.ack_flag and received_packet.ack_num==sender_ack_syn_packet.sequence_num+1:
+        if received_packet.flags==0b010 and received_packet.ack_num==sender_ack_syn_packet.sequence_num+1:
             print ("The client is alive!")
             return True
         
