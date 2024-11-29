@@ -22,39 +22,51 @@ dupAckCount = 0
 # when you recieve send two more packets
 
 
-too_long = 1.6
-set_timer = time.time()
+too_long = 2
 sndpkt = []
 ack_num = 1 # set from handshake
+
 nextseqnum = 0
 seq = 0
-clientSocket.settimeout(0.5) # non blocking
+clientSocket.settimeout(0.0) # non blocking
 
 data = f.read(50)
 while data!='' or len(sndpkt) != 0: # data from above or data in queue
     time.sleep(1)
     # get data from above
-    ack_num = ack_num + len(data)
-    packet = Packet(seq, False, True, ack_num, data)
-    seq += len(data)
-    sndpkt.append(packet)
-    clientSocket.sendto(packet.change_to_bytes(),(serverName, serverPort))
-    
-    if len(sndpkt) == 1:
-        set_timer = time.time()
+    if data != '':
+        
+        print('reading more data\n', data)
+        ack_num = ack_num + len(data)
+        packet = Packet(seq, False, True, ack_num, data)
+        seq += len(data)
+        sndpkt.append(packet)
+        clientSocket.sendto(packet.change_to_bytes(),(serverName, serverPort))
+        
+        print('length of sndpkt:', len(sndpkt))
+        if len(sndpkt) == 1:
+            set_timer = time.time()
+            nextseqnum += len(data)
+
+        data = f.read(50)
+
 
     # recv
     try: # actually recv somthing
         ack, serverAddress = clientSocket.recvfrom(2048)
         response_packet = Packet.from_bytes_to(ack)
         print(response_packet)
+        print('wthin try block, received packs ack_num:', response_packet.ack_num, 'the ack that is excepted:', nextseqnum)
         if (response_packet.ack_num == nextseqnum): # checking if it the correct 
             print('correct packet')
             sndpkt.pop(0)
             set_timer = time.time()
-            nextseqnum += len(response_packet.payload)
-    except: # didn't recv anything
+            if len(sndpkt) > 0:
+                nextseqnum += len(sndpkt[0].payload)
+    except Exception as e: # didn't recv anything
+        print(e)
         print('Nothing to recieve at socket')
+        print('data> ->', data, '<- length of unAck packets:', len(sndpkt))
     
     # timeout
     if time.time() - set_timer > too_long:
@@ -62,8 +74,8 @@ while data!='' or len(sndpkt) != 0: # data from above or data in queue
         print('how many packets ',len(sndpkt))
         for i, pkt in enumerate(sndpkt):
             print('sending the:', i)
-            print(pkt.ack_num)
+            print(pkt.sequence_num)
             clientSocket.sendto(pkt.change_to_bytes(),(serverName, serverPort))
         set_timer = time.time()
         
-    data = f.read(50)
+    

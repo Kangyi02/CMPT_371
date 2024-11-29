@@ -21,7 +21,10 @@ class Packet:
         return Packet(sequence_num, syn_flag, ack_flag, ack_num, payload)
     
     def __str__(self):
-        return str(self.sequence_num) + '\n' \
-            + str(self.ack_num) + '\n' \
-            + str(self.ack_flag) + str(self.syn_flag) +'\n' \
-            + self.payload
+        return '------------------- start\n'+ 'Sqeunce number: ' \
+            + str(self.sequence_num) + '\n' \
+            + 'Ack number: '+ str(self.ack_num) + '\n' \
+            + 'Ack Flag: ' + str(self.ack_flag) \
+            + '  SYN flag: ' + str(self.syn_flag) +'\n' \
+            + 'Payload\n--------\n' +self.payload \
+            + '\n------------------- end'

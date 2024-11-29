@@ -14,8 +14,8 @@ while flag:
     try:
         message, clientAddress = serverSocket.recvfrom(2048)
     except:
-        flag = False
         print('timeout server closing')
+        break
     packet = Packet.from_bytes_to(message)
     
     if random.random() > 0.25: # pretend to receive packet
@@ -24,10 +24,11 @@ while flag:
             # if it is he next packet respond with the correct ack
             # else respond with the previous ack and keep doing that 
             # until the right packet is sent
-            print('correct packet')
+            
             nextseqnum = packet.sequence_num + len(packet.payload)
             payload = packet.payload
             sndpkt = Packet(0, False, True, nextseqnum, packet.payload.upper())
+            print('correct packet sending response with ack number:', nextseqnum)
         else:
             print('incorrect packet, sending expected')
         serverSocket.sendto(sndpkt.change_to_bytes(),clientAddress)
