@@ -1,11 +1,15 @@
 We simulate a 3-way TCP handshake on top of the UDP protocol to make our protocol connection-oriented. 
 We have a packet class which simlates the TCP packet structure.
 Firstly, we create a UDP socket between the client and the server. Then, the client will make a packet with
-initial sequence number x, set the TCP SYN to true, and send the packet to the server. Once the server receives
-this packet, the server will make a packet with TCP SYNACK msg: the packet includes SYN flag(true), ACK flag(true), 
-indicating it is SYNACK, and an intial sequence number decided by the server, an ack number which is x+1. Next, 
-the server will send the packet it made to the client. When the client receives this packet indicating 
+initial sequence number x, set the TCP SYN bit to true, and send the packet to the server. Once the server receives
+this packet, the server will make a packet with setting TCP SYN bit and ACK bit to true, indicating it is SYNACK, 
+and an intial sequence number decided by the server, an ack number which is x+1. 
+Next, the server will send the packet it made to the client. When the client receives this packet indicating 
 SYNACK, it shows the server is alive, the connection on the client side is established. The client then will 
 make a packet with ack number to ack the SYNACK, send this packet to the server. If the server receives the 
 correct ACK number, it indicates the client is alive and the connection is established.
+Additionaly, a timer is set for the SYN packet sent by the client and the SYNACK packet sent by the server.
+If either of these packets is not acknowledged within the timeout period, it will be resent for maximum 3 times, 
+ensuring reliable communication during the handshake..
+
 

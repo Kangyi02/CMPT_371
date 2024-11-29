@@ -3,9 +3,10 @@ from socket import *
 from packet import * 
 
 # create a udp socket connection
-serverPort = 12014
+serverPort = 12019
 serverSocket = socket(AF_INET, SOCK_DGRAM)
 serverSocket.bind(('', serverPort))
+serverSocket.settimeout(200)
 
 is_client_alive = False
 initial_seq_num = 20000
@@ -22,20 +23,31 @@ def handshake_server_side():
         ack_num = received_packet.sequence_num + 1
         sender_ack_syn_packet = Packet(initial_seq_num, 0b110, ack_num, '')
 
-        serverSocket.sendto(sender_ack_syn_packet.change_to_bytes(), clientAddress)
+        # timer
+        num_of_sends = 1
+        max_num_of_sends = 4
 
-        message, clientAddress = serverSocket.recvfrom(2048)
-        received_packet = Packet.from_bytes_to(message)
-        # print(received_packet.ack_num)
+        while num_of_sends<=max_num_of_sends:
+            try:
+                serverSocket.sendto(sender_ack_syn_packet.change_to_bytes(), clientAddress)
 
-        # then the server receives the ACK from the client, done
-        if received_packet.flags==0b010 and received_packet.ack_num==sender_ack_syn_packet.sequence_num+1:
-            print ("The client is alive!")
-            return True
-        
+                message, clientAddress = serverSocket.recvfrom(2048)
+                received_packet = Packet.from_bytes_to(message)
+                # print(received_packet.ack_num)
+
+                # then the server receives the ACK from the client, done
+                if received_packet.flags==0b010 and received_packet.ack_num==sender_ack_syn_packet.sequence_num+1:
+                    print ("The client is alive!")
+                    return True
+                
+            except socket.timeout:
+                num_of_sends+=1
+                print("Timeout, resending TCP SYNACK packet!")
+
     return False
 
 is_client_alive = handshake_server_side()
+
 while is_client_alive:
     message, clientAddress = serverSocket.recvfrom(2048)
     modifiedMessage = message.decode().upper()
