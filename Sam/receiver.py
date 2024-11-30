@@ -8,13 +8,13 @@ serverSocket.bind(('', serverPort))
 serverSocket.settimeout(20)
 nextseqnum = 0 # set by hand shake
 sndpkt = Packet(0, False, True, nextseqnum, 'empty')
-print ('The server is ready to receive')
+print ('Receiver is ready to receive')
 flag = True
 while flag:
     try:
         message, clientAddress = serverSocket.recvfrom(2048)
     except:
-        print('timeout server closing')
+        print('timeout receiver closing')
         break
     packet = Packet.from_bytes_to(message)
     
