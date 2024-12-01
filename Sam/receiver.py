@@ -2,17 +2,17 @@ from socket import *
 from packet import Packet
 import random
 
-serverPort = 1200
-serverSocket = socket(AF_INET, SOCK_DGRAM)
-serverSocket.bind(('', serverPort))
-serverSocket.settimeout(20)
+receiverPort = 1200
+receiverSocket = socket(AF_INET, SOCK_DGRAM)
+receiverSocket.bind(('', receiverPort))
+receiverSocket.settimeout(20)
 nextseqnum = 0 # set by hand shake
 sndpkt = Packet(0, False, True, nextseqnum, 'empty')
 print ('Receiver is ready to receive')
 flag = True
 while flag:
     try:
-        message, clientAddress = serverSocket.recvfrom(2048)
+        message, senderAddress = receiverSocket.recvfrom(2048)
     except:
         print('timeout receiver closing')
         break
@@ -25,11 +25,12 @@ while flag:
             # else respond with the previous ack and keep doing that 
             # until the right packet is sent
             
-            nextseqnum = packet.sequence_num + len(packet.payload)
+            
             payload = packet.payload
-            sndpkt = Packet(0, False, True, nextseqnum, packet.payload.upper())
-            print('correct packet sending response with ack number:', nextseqnum)
+            sndpkt = Packet(0, False, True, nextseqnum+1, packet.payload.upper())
+            print('correct packet sending response with ack number:', nextseqnum+1)
+            nextseqnum += len(packet.payload)
         else:
             print('incorrect packet, sending expected')
-        serverSocket.sendto(sndpkt.change_to_bytes(),clientAddress)
+        receiverSocket.sendto(sndpkt.change_to_bytes(),senderAddress)
     
