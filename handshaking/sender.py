@@ -3,13 +3,13 @@ from packet import *
 
 # create a udp socket connection
 serverName = gethostname()
-serverPort = 12019
+serverPort = 12013
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 clientSocket.settimeout(2)
 
 # global variable to see if hand shake successful
 is_server_alive = False
-initial_sequence_num = 12345
+initial_sequence_num = 20000
 
 # 0b000
 # syn, ack, fin
@@ -28,6 +28,7 @@ def handshake_client_side():
 
     while num_of_sends<=max_num_of_sends:
         try:
+            print("The initial sequence number from sender is: ", initial_sequence_num)
             clientSocket.sendto(initial_packet.change_to_bytes(), (serverName, serverPort))
 
             # the client receives the SYNACK
@@ -36,8 +37,9 @@ def handshake_client_side():
 
             if received_packet.flags==0b110 and received_packet.ack_num==initial_packet.sequence_num+1:
                 # sends back a ACK indicates it receives the SYNACK
+                print("The SYN and ACK flags are true, received SYNACK.")
                 ack_num = received_packet.sequence_num+1
-                #print(ack_num)
+                print("The SYNACK number is: ", ack_num)
                 receiver_ack_packet = Packet(0, 0b010, ack_num, '')
 
                 # timer?
@@ -54,7 +56,7 @@ def handshake_client_side():
     return False
 
 is_server_alive = handshake_client_side()
-while is_server_alive:
+while not is_server_alive:
     message = input('Input lowercase sentence:')
     clientSocket.sendto(message.encode(), (serverName, serverPort))
     modifiedMessage, serverAddress = clientSocket.recvfrom(2048)

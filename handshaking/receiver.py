@@ -3,13 +3,13 @@ from socket import *
 from packet import * 
 
 # create a udp socket connection
-serverPort = 12019
+serverPort = 12013
 serverSocket = socket(AF_INET, SOCK_DGRAM)
 serverSocket.bind(('', serverPort))
 serverSocket.settimeout(200)
 
 is_client_alive = False
-initial_seq_num = 20000
+initial_seq_num = 10000
 
 def handshake_server_side():
     print ("The server is ready to hand shake")
@@ -21,8 +21,10 @@ def handshake_server_side():
     # create a SYNACK, then sends back to the client
     if received_packet.flags == 0b100:
         ack_num = received_packet.sequence_num + 1
+        print("The initial sequence number from receiver is: ", initial_seq_num)
         sender_ack_syn_packet = Packet(initial_seq_num, 0b110, ack_num, '')
-
+        print("The SYN flag is true, receiver starts to establish connection")
+        print("The ACK number for SYN message is: ", ack_num)
         # timer
         num_of_sends = 1
         max_num_of_sends = 4
@@ -37,6 +39,8 @@ def handshake_server_side():
 
                 # then the server receives the ACK from the client, done
                 if received_packet.flags==0b010 and received_packet.ack_num==sender_ack_syn_packet.sequence_num+1:
+                    print("The ACK flag is true, received ACK\n")
+                    print("The received ACK number is: ", received_packet.ack_num)
                     print ("The client is alive!")
                     return True
                 
